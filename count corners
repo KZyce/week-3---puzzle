@@ -1,0 +1,132 @@
+let shapes = [];
+let totalCorners = 0;
+let options = [];
+let score = 0;
+let gameOver = false;
+
+// Shape definitions
+const shapeTypes = [
+  { type: "circle", corners: 0 },
+  { type: "square", corners: 4 },
+  { type: "triangle", corners: 3 },
+];
+
+function setup() {
+  createCanvas(600, 400);
+  generatePuzzle();
+}
+
+function draw() {
+  background(240);
+
+  if (!gameOver) {
+    displayShapes();
+    displayOptions();
+    displayScore();
+  } else {
+    displayGameOver();
+  }
+}
+
+function generatePuzzle() {
+  shapes = [];
+  options = [];
+  totalCorners = 0;
+
+  // Generate random shapes
+  let numShapes = floor(random(6, 12));
+  for (let i = 0; i < numShapes; i++) {
+    let shape = random(shapeTypes);
+    shapes.push({
+      type: shape.type,
+      corners: shape.corners,
+      x: random(50, width - 50),
+      y: random(50, height - 150),
+    });
+    totalCorners += shape.corners; // Sum up the corners
+  }
+
+  // Generate answer options
+  options = [totalCorners, totalCorners + floor(random(1, 5)), totalCorners - floor(random(1, 5))];
+  options = shuffle(options);
+}
+
+function displayShapes() {
+  for (let shape of shapes) {
+    if (shape.type === "circle") {
+      fill(100, 150, 255);
+      ellipse(shape.x, shape.y, 40, 40);
+    } else if (shape.type === "square") {
+      fill(255, 100, 150);
+      rect(shape.x - 20, shape.y - 20, 40, 40);
+    } else if (shape.type === "triangle") {
+      fill(100, 255, 150);
+      triangle(shape.x, shape.y - 25, shape.x - 20, shape.y + 20, shape.x + 20, shape.y + 20);
+    }
+  }
+
+  // Display instructions
+  fill(0);
+  textSize(20);
+  textAlign(LEFT, CENTER);
+  text("Count the total corners of all shapes!", 20, height - 100);
+}
+
+function displayOptions() {
+  fill(0);
+  textSize(18);
+  textAlign(CENTER, CENTER);
+  for (let i = 0; i < options.length; i++) {
+    let x = width / options.length * i + width / options.length / 2;
+    let y = height - 50;
+    fill(200);
+    rect(x - 40, y - 20, 80, 40, 10);
+    fill(0);
+    text(options[i], x, y);
+  }
+}
+
+function displayScore() {
+  fill(0);
+  textSize(18);
+  textAlign(LEFT, TOP);
+  text(`Score: ${score}`, 20, 20);
+}
+
+function displayGameOver() {
+  background(240);
+  fill(0);
+  textSize(32);
+  textAlign(CENTER, CENTER);
+  text("Game Over", width / 2, height / 2 - 20);
+  textSize(20);
+  text(`Final Score: ${score}`, width / 2, height / 2 + 20);
+  text("Press R to Restart", width / 2, height / 2 + 60);
+}
+
+function mousePressed() {
+  if (gameOver) return;
+
+  // Check if the player clicked on an option
+  for (let i = 0; i < options.length; i++) {
+    let x = width / options.length * i + width / options.length / 2;
+    let y = height - 50;
+    if (mouseX > x - 40 && mouseX < x + 40 && mouseY > y - 20 && mouseY < y + 20) {
+      if (options[i] === totalCorners) {
+        score++;
+        generatePuzzle();
+      } else {
+        gameOver = true;
+      }
+      break;
+    }
+  }
+}
+
+function keyPressed() {
+  if (gameOver && key === "R") {
+    score = 0;
+    gameOver = false;
+    generatePuzzle();
+  }
+}
